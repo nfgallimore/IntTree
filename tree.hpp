@@ -39,8 +39,13 @@ public:
       int totalDepth{0};
       int currentDepth{0};
 
-      return determineDepth(rootPtr, &totalDepth, &currentDepth);
-      //return totalDepth;
+      determineDepth(rootPtr, totalDepth, currentDepth);
+      return totalDepth;
+   }
+   int getActualDepth() const {
+      int totalDepth{0};
+      int currentDepth{0};
+      return determineDepthInt(rootPtr, totalDepth, currentDepth);
    }
 
    // begin binary search
@@ -98,17 +103,46 @@ private:
 
    // calculate the depth of the tree
    // inspired by http://www.cs.kent.edu/~durand/CS2/Notes/10_Binary_Trees/ds_treesC.html
-   int determineDepth(TreeNode<NODETYPE>* root, int* totalDepth, int* currentDepth) const {
+
+   // NOTE Tian said "do whatever you think the right way to do,"
+   // and I think changing the return statement from void to int makes the implementation way easier.
+   // Also I do not understand why these are int* totalDepth, int* currentDepth instead of just regular ints. Why make these pointers?
+
+   void determineDepth(TreeNode<NODETYPE>* root, int &totalDepth, int &currentDepth) const {
       if (root == nullptr) {
-         return -1;
+         currentDepth = -1;
+         return;
+      }
+      if (currentDepth > totalDepth) {
+         totalDepth = currentDepth;
+      }
+      currentDepth++;
+
+      int rDepth = currentDepth;
+      determineDepth(root->leftPtr, totalDepth, currentDepth);
+      int lDepth = currentDepth;
+      currentDepth = rDepth;
+      determineDepth(root->rightPtr, totalDepth, currentDepth);
+      rDepth = currentDepth;
+
+   }
+   int determineDepthInt(TreeNode<NODETYPE>* root, int &totalDepth, int &currentDepth) const {
+      int depthVal;
+      if (root == nullptr) {
+         depthVal = -1;
       }
       else {
-         int depthLeft = determineDepth(root->leftPtr, totalDepth, currentDepth);
-         int depthRight = determineDepth(root->rightPtr, totalDepth, currentDepth);
-         int depthVal = 1 + (depthLeft > depthRight ? depthLeft : depthRight);
-         return depthVal;
+         int lDepth = determineDepthInt(root->leftPtr, totalDepth, currentDepth);
+         int rDepth = determineDepthInt(root->rightPtr, totalDepth, currentDepth);
+         depthVal = 1 + (lDepth > rDepth ? lDepth : rDepth);
       }
+      return depthVal;
    }
+   //   https://www.cs.usfca.edu/~galles/visualization/BST.html is great tool for visualizing random binary trees
+
+   // other sources probably every student looked at:
+   //   http://codercareer.blogspot.com/2013/01/no-35-depth-of-binary-trees.html
+   //   http://www.geeksforgeeks.org/find-minimum-depth-of-a-binary-tree/
 
    // do a binary search on the Tree
    TreeNode<NODETYPE>* binarySearchHelper(TreeNode<NODETYPE>* root, int val) const {
